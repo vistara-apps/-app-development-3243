@@ -6,14 +6,15 @@ import CreatorDashboard from './pages/CreatorDashboard';
 import ContentDetail from './pages/ContentDetail';
 import BrowseContent from './pages/BrowseContent';
 import { ContentProvider } from './context/ContentContext';
+import { Layout } from './components/ui';
 
 function App() {
   return (
     <ContentProvider>
       <Router>
-        <div className="min-h-screen bg-gray-50">
+        <Layout>
           <Header />
-          <main>
+          <main className="flex-1">
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/browse" element={<BrowseContent />} />
@@ -21,7 +22,7 @@ function App() {
               <Route path="/content/:id" element={<ContentDetail />} />
             </Routes>
           </main>
-        </div>
+        </Layout>
       </Router>
     </ContentProvider>
   );
