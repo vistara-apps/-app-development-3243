@@ -1,115 +1,142 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Search, Filter } from 'lucide-react';
+import React from 'react';
+import { Search } from 'lucide-react';
 import { useContent } from '../context/ContentContext';
+import { useSearch } from '../hooks/useSearch';
+import { Container, Section, Grid } from '../components/ui';
+import SearchBar from '../components/SearchBar';
+import FilterPanel from '../components/FilterPanel';
+import ContentCard from '../components/ContentCard';
 
 const BrowseContent = () => {
-  const { contents, searchTerm, setSearchTerm, selectedCategory, setSelectedCategory } = useContent();
-
-  const categories = [
-    'all',
-    'Programming',
-    'Art & Design',
-    'Finance',
-    'Photography',
-    'Music',
-    'Education'
-  ];
-
-  const filteredContent = contents.filter(content => {
-    const matchesSearch = content.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         content.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || content.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  const { contents } = useContent();
+  
+  const {
+    searchTerm,
+    selectedCategory,
+    selectedTypes,
+    priceRange,
+    sortBy,
+    recentSearches,
+    filteredAndSortedContents,
+    categories,
+    contentTypes,
+    searchSuggestions,
+    trendingSearches,
+    activeFilterCount,
+    setSearchTerm,
+    setSelectedCategory,
+    setSelectedTypes,
+    setPriceRange,
+    setSortBy,
+    handleSearch,
+    clearFilters
+  } = useSearch(contents);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">Browse Content</h1>
-        <p className="text-xl text-gray-600">
-          Discover premium digital content from creators worldwide
-        </p>
-      </div>
-
-      {/* Search and Filters */}
-      <div className="mb-8 space-y-4">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search content..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-          />
-        </div>
-
-        <div className="flex items-center space-x-2 overflow-x-auto pb-2">
-          <Filter className="h-5 w-5 text-gray-400 flex-shrink-0" />
-          {categories.map((category) => (
-            <button
-              key={category}
-              onClick={() => setSelectedCategory(category)}
-              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-                selectedCategory === category
-                  ? 'bg-primary-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              {category === 'all' ? 'All Categories' : category}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Content Grid */}
-      {filteredContent.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredContent.map((content) => (
-            <Link
-              key={content.id}
-              to={`/content/${content.id}`}
-              className="content-card bg-white rounded-xl overflow-hidden card-shadow hover:shadow-xl transition-all"
-            >
-              <img
-                src={content.thumbnail}
-                alt={content.title}
-                className="w-full h-48 object-cover"
-              />
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-medium text-primary-600 bg-primary-50 px-2 py-1 rounded-full">
-                    {content.category}
-                  </span>
-                  <span className="text-lg font-bold text-gray-900">{content.price}</span>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">{content.title}</h3>
-                <p className="text-gray-600 text-sm mb-4 line-clamp-2">{content.description}</p>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-500">by {content.creatorName}</span>
-                  <span className="text-xs text-gray-500 capitalize bg-gray-100 px-2 py-1 rounded">
-                    {content.type}
-                  </span>
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-12">
-          <div className="text-gray-400 mb-4">
-            <Search className="h-16 w-16 mx-auto" />
+    <div className="min-h-screen bg-secondary-50">
+      <Section padding="lg">
+        <Container>
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-4xl font-bold text-secondary-900 mb-4">Browse Content</h1>
+            <p className="text-xl text-secondary-600">
+              Discover premium digital content from creators worldwide
+            </p>
           </div>
-          <h3 className="text-xl font-medium text-gray-900 mb-2">No content found</h3>
-          <p className="text-gray-600">
-            Try adjusting your search terms or filters to find what you're looking for
-          </p>
-        </div>
-      )}
+
+          {/* Search Bar */}
+          <div className="mb-8">
+            <SearchBar
+              value={searchTerm}
+              onChange={setSearchTerm}
+              onSearch={handleSearch}
+              suggestions={searchSuggestions}
+              recentSearches={recentSearches}
+              trendingSearches={trendingSearches}
+              placeholder="Search for content, creators, or categories..."
+            />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            {/* Filters Sidebar */}
+            <div className="lg:col-span-1">
+              <FilterPanel
+                categories={categories}
+                selectedCategory={selectedCategory}
+                onCategoryChange={setSelectedCategory}
+                contentTypes={contentTypes}
+                selectedTypes={selectedTypes}
+                onTypesChange={setSelectedTypes}
+                priceRange={priceRange}
+                onPriceRangeChange={setPriceRange}
+                sortBy={sortBy}
+                onSortChange={setSortBy}
+              />
+            </div>
+
+            {/* Content Grid */}
+            <div className="lg:col-span-3">
+              {/* Results Header */}
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-lg font-semibold text-secondary-900">
+                    {filteredAndSortedContents.length} Results
+                    {searchTerm && ` for "${searchTerm}"`}
+                  </h2>
+                  {activeFilterCount > 0 && (
+                    <p className="text-sm text-secondary-600 mt-1">
+                      {activeFilterCount} filter{activeFilterCount !== 1 ? 's' : ''} applied
+                    </p>
+                  )}
+                </div>
+                
+                {activeFilterCount > 0 && (
+                  <button
+                    onClick={clearFilters}
+                    className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+                  >
+                    Clear all filters
+                  </button>
+                )}
+              </div>
+
+              {/* Content Grid */}
+              {filteredAndSortedContents.length > 0 ? (
+                <Grid cols={3} responsive className="mb-8">
+                  {filteredAndSortedContents.map((content) => (
+                    <ContentCard
+                      key={content.id}
+                      content={content}
+                      showStats={true}
+                    />
+                  ))}
+                </Grid>
+              ) : (
+                <div className="text-center py-12">
+                  <div className="w-24 h-24 mx-auto mb-4 bg-secondary-100 rounded-full flex items-center justify-center">
+                    <Search className="w-8 h-8 text-secondary-400" />
+                  </div>
+                  <h3 className="text-lg font-medium text-secondary-900 mb-2">
+                    No content found
+                  </h3>
+                  <p className="text-secondary-600 mb-4">
+                    Try adjusting your search terms or filters to find what you're looking for.
+                  </p>
+                  <button
+                    onClick={clearFilters}
+                    className="text-primary-600 hover:text-primary-700 font-medium"
+                  >
+                    Clear all filters
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </Container>
+      </Section>
     </div>
   );
 };
 
 export default BrowseContent;
+
